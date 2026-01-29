@@ -8,9 +8,9 @@ Accept: application/json
 POST {{counterAPI_HostAddress}}/api/counters
 Content-Type: application/json
 {
-  "Id":"0",
-  "Value" = 42,
-  "Name" = "aaaaaaaaaa"
+  "id":"1",
+  "value":"42",
+  "name":"a"
 }
 
 ###
