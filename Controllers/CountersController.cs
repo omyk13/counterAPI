@@ -52,7 +52,7 @@ namespace counterAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(counter).State = EntityState.Modified;
+            _context.Entry(counter).State = EntityState.Modified; 
 
             try
             {

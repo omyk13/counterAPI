@@ -9,8 +9,18 @@ POST {{counterAPI_HostAddress}}/api/counters
 Content-Type: application/json
 
 {
-  "value":"42",
+  "id":100,
+  "value":42,
   "name":"a"
+}
+
+###
+@id=0
+PUT {{counterAPI_HostAddress}}/api/counters/{{id}}
+Content-Type: application/json
+
+{
+  //Counter
 }
 
 ###
