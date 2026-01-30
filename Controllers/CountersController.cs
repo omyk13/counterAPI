@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using counterAPI.Context;
 using counterAPI.Models;
+using counterAPI.DTOs;
 
 namespace counterAPI.Controllers
 {
@@ -23,14 +24,14 @@ namespace counterAPI.Controllers
 
         // GET: api/Counters
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Counter>>> GetCounters()
+        public async Task<ActionResult<IEnumerable<CounterDTO>>> GetCounters()
         {
-            return await _context.Counters.ToListAsync();
+            return await _context.Counters.Select(c => CounterToDTO(c)).ToListAsync();
         }
 
         // GET: api/Counters/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Counter>> GetCounter(int id)
+        public async Task<ActionResult<CounterDTO>> GetCounter(int id)
         {
             var counter = await _context.Counters.FindAsync(id);
 
@@ -39,35 +40,36 @@ namespace counterAPI.Controllers
                 return NotFound();
             }
 
-            return counter;
+            return CounterToDTO(counter);
         }
 
         // PUT: api/Counters/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCounter(int id, Counter counter)
+        public async Task<IActionResult> PutCounter(int id, CounterDTO counterDTO)
         {
-            if (id != counter.Id)
+            if (id != counterDTO.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(counter).State = EntityState.Modified; 
+            var counter = await _context.Counters.FindAsync(id);
+            if (counter == null)
+            {
+                return NotFound();
+            }
+
+            counter.Id = counterDTO.Id;
+            counter.Name = counterDTO.Name;
+            counter.Value = counterDTO.Value;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException) when (!CounterExists(id))
             {
-                if (!CounterExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -76,12 +78,23 @@ namespace counterAPI.Controllers
         // POST: api/Counters
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Counter>> PostCounter(Counter counter)
+        public async Task<ActionResult<CounterDTO>> PostCounter(CounterDTO counterDTO)
         {
+            var counter = new Counter
+            {
+                Id = counterDTO.Id,
+                Name = counterDTO.Name,
+                Value = counterDTO.Value
+            };
+
             _context.Counters.Add(counter);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCounter), new { id = counter.Id }, counter);
+            return CreatedAtAction(
+                nameof(GetCounter),
+                new { id = counter.Id },
+                CounterToDTO(counter)
+                );
         }
 
         // DELETE: api/Counters/5
@@ -104,5 +117,13 @@ namespace counterAPI.Controllers
         {
             return _context.Counters.Any(e => e.Id == id);
         }
+
+        private static CounterDTO CounterToDTO(Counter counter) =>
+            new CounterDTO
+            {
+                Id = counter.Id,
+                Name = counter.Name,
+                Value = counter.Value
+            };
     }
 }
