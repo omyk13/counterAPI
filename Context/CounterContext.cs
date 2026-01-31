@@ -8,7 +8,7 @@ namespace counterAPI.Context
         public CounterContext(DbContextOptions<CounterContext> options)
             : base(options) 
         { 
-        
+                   
         }
 
         public DbSet<Counter> Counters { get; set; } = null!;
